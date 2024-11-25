@@ -18,7 +18,7 @@ const io = socketIo(server, {
 });
 
 // Open the serial port (adjust the path as needed, e.g., 'COM3' on Windows or '/dev/ttyUSB0' on Linux/Mac)
-const port = new SerialPort({ path: '/dev/cu.usbserial-2140', baudRate: 115200 });
+const port = new SerialPort({ path: '/dev/cu.usbserial-140', baudRate: 115200 });
 
 // Use the ReadlineParser to handle incoming serial data
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
@@ -85,6 +85,22 @@ io.on('connection', (socket) => {
             io.emit('cut_status', data); // Send cut count data to React UI
         } else {
             console.log('Invalid data received:', data);
+        }
+    });
+
+    // Listen for travel distance updates from ESP32
+    parser.on('data', (line) => {
+        try {
+            const parsedData = JSON.parse(line);
+
+            if (parsedData.travelDistance !== undefined) {
+                console.log('Travel distance received:', parsedData.travelDistance);
+
+                // Emit travel distance to the React UI
+                io.emit('travel_distance', { distance: parsedData.travelDistance });
+            }
+        } catch (err) {
+            console.error('Error parsing serial data:', err.message);
         }
     });
 

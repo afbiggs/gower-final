@@ -89,20 +89,22 @@ io.on('connection', (socket) => {
     });
 
     // Listen for travel distance updates from ESP32
-    parser.on('data', (line) => {
-        try {
-            const parsedData = JSON.parse(line);
+    
 
-            if (parsedData.travelDistance !== undefined) {
-                console.log('Travel distance received:', parsedData.travelDistance);
+    // parser.on('data', (line) => {
+    //     try {
+    //         const parsedData = JSON.parse(line);
 
-                // Emit travel distance to the React UI
-                io.emit('travel_distance', { distance: parsedData.travelDistance });
-            }
-        } catch (err) {
-            console.error('Error parsing serial data:', err.message);
-        }
-    });
+    //         if (parsedData.travelDistance !== undefined) {
+    //             console.log('Travel distance received:', parsedData.travelDistance);
+
+    //             // Emit travel distance to the React UI
+    //             io.emit('travel_distance', { distance: parsedData.travelDistance });
+    //         }
+    //     } catch (err) {
+    //         console.error('Error parsing serial data:', err.message);
+    //     }
+    // });
 
     // Handle client disconnection
     socket.on('disconnect', () => {
@@ -114,6 +116,234 @@ io.on('connection', (socket) => {
 server.listen(4300, () => {
     console.log(`Server is running on port 4300`);
 });
+
+
+
+
+// // Import the required libraries
+// const express = require('express');
+// const http = require('http');
+// const socketIo = require('socket.io');
+// const { SerialPort } = require('serialport');
+// const { ReadlineParser } = require('@serialport/parser-readline');
+
+// // Create an Express app and HTTP server
+// const app = express();
+// const server = http.createServer(app);
+
+// // Attach Socket.IO to the server with CORS settings
+// const io = socketIo(server, {
+//     cors: {
+//         origin: "*",
+//         methods: ["GET", "POST"]
+//     }
+// });
+
+// // Open the serial port (adjust the path as needed, e.g., 'COM3' on Windows or '/dev/ttyUSB0' on Linux/Mac)
+// const port = new SerialPort({ path: '/dev/cu.usbserial-140', baudRate: 115200 });
+
+// // Use the ReadlineParser to handle incoming serial data
+// const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+// // Helper function to validate JSON
+// function isValidJson(data) {
+//     try {
+//         const parsed = JSON.parse(data);
+//         return parsed && typeof parsed === 'object';
+//     } catch {
+//         return false;
+//     }
+// }
+
+// // Listen for Socket.IO connections
+// io.on('connection', (socket) => {
+//     console.log('A client connected: ' + socket.id);
+
+//     // Listen for cut parameters from the React client and send to ESP32
+//     socket.on('set_cut_parameters', (data) => {
+//         console.log('Cut parameters received:', data);
+    
+//         // Send parameters as JSON string to the ESP32
+//         const jsonData = JSON.stringify(data) + '\n'; // Add newline to terminate the message
+//         port.write(jsonData, (err) => {
+//             if (err) {
+//                 console.error('Error writing to serial port:', err.message);
+//             } else {
+//                 console.log('Cut parameters sent to ESP32:', jsonData);
+//             }
+//         });
+//     });
+
+//     // Listen for Material Forward Button events
+//     socket.on('material_forward_control', (command) => {
+//         console.log(`Material Forward command received: ${command}`);
+
+//         // Validate and send command to ESP32
+//         if (command === "ON" || command === "OFF") {
+//             port.write(`{"materialForward":"${command}"}\n`, (err) => {
+//                 if (err) {
+//                     console.error('Error writing to serial port:', err.message);
+//                 } else {
+//                     console.log(`Material Forward command sent to ESP32: ${command}`);
+//                 }
+//             });
+//         } else {
+//             console.error('Invalid Material Forward command received:', command);
+//         }
+//     });
+
+//     // Listen for Manual Shear Button events
+//     socket.on('manual_shear_control', (command) => {
+//         console.log(`Manual Shear command received: ${command}`);
+
+//         // Validate and send command to ESP32
+//         if (command === "ON" || command === "OFF") {
+//             port.write(`{"manualShear":"${command}"}\n`, (err) => {
+//                 if (err) {
+//                     console.error('Error writing to serial port:', err.message);
+//                 } else {
+//                     console.log(`Manual Shear command sent to ESP32: ${command}`);
+//                 }
+//             });
+//         } else {
+//             console.error('Invalid Manual Shear command received:', command);
+//         }
+//     });
+
+//     // Listen for data from the serial port
+//     parser.on('data', (line) => {
+//         if (isValidJson(line)) {
+//             const parsedData = JSON.parse(line);
+
+//             // Handle travel distance updates
+//             if (parsedData.travelDistance !== undefined) {
+//                 console.log('Travel distance received:', parsedData.travelDistance);
+//                 io.emit('travel_distance', { travelDistance: parsedData.travelDistance });
+//             }
+
+//             // Handle cut count updates
+//             if (parsedData.cutCount !== undefined) {
+//                 console.log('Cut count received:', parsedData.cutCount);
+//                 io.emit('cut_status', { cutCount: parsedData.cutCount });
+//             }
+//         } else {
+//             console.warn('Non-JSON data received and ignored:', line);
+//         }
+//     });
+
+//     // Handle client disconnection
+//     socket.on('disconnect', () => {
+//         console.log('Client disconnected: ' + socket.id);
+//     });
+// });
+
+// // Start the HTTP server
+// server.listen(4300, () => {
+//     console.log(`Server is running on port 4300`);
+// });
+
+
+
+// // Import the required libraries
+// const express = require('express');
+// const http = require('http');
+// const socketIo = require('socket.io');
+// const { SerialPort } = require('serialport');
+// const { ReadlineParser } = require('@serialport/parser-readline');
+
+// // Create an Express app and HTTP server
+// const app = express();
+// const server = http.createServer(app);
+
+// // Attach Socket.IO to the server with CORS settings
+// const io = socketIo(server, {
+//     cors: {
+//         origin: "*",
+//         methods: ["GET", "POST"]
+//     }
+// });
+
+// // Open the serial port (adjust the path as needed, e.g., 'COM3' on Windows or '/dev/ttyUSB0' on Linux/Mac)
+// const port = new SerialPort({ path: '/dev/cu.usbserial-140', baudRate: 115200 });
+
+// // Use the ReadlineParser to handle incoming serial data
+// const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+// // Listen for Socket.IO connections
+// io.on('connection', (socket) => {
+//     console.log('A client connected: ' + socket.id);
+
+//     // Listen for cut parameters from the React client and send to ESP32
+//     socket.on('set_cut_parameters', (data) => {
+//         console.log('Cut parameters received:', data);
+    
+//         // Send parameters as JSON string to the ESP32
+//         const jsonData = JSON.stringify(data) + '\n'; // Add newline to terminate the message
+//         port.write(jsonData, (err) => {
+//             if (err) {
+//                 console.error('Error writing to serial port:', err.message);
+//             } else {
+//                 console.log('Cut parameters sent to ESP32:', jsonData);
+//             }
+//         });
+//     });
+
+//     // Listen for Material Forward Button events
+//     socket.on('material_forward_control', (command) => {
+//         console.log(`Material Forward command received: ${command}`);
+
+//         // Validate and send command to ESP32
+//         if (command === "ON" || command === "OFF") {
+//             port.write(`{"materialForward":"${command}"}\n`, (err) => {
+//                 if (err) {
+//                     console.error('Error writing to serial port:', err.message);
+//                 } else {
+//                     console.log(`Material Forward command sent to ESP32: ${command}`);
+//                 }
+//             });
+//         } else {
+//             console.error('Invalid Material Forward command received:', command);
+//         }
+//     });
+
+//     // Listen for Manual Shear Button events
+//     socket.on('manual_shear_control', (command) => {
+//         console.log(`Manual Shear command received: ${command}`);
+
+//         // Validate and send command to ESP32
+//         if (command === "ON" || command === "OFF") {
+//             port.write(`{"manualShear":"${command}"}\n`, (err) => {
+//                 if (err) {
+//                     console.error('Error writing to serial port:', err.message);
+//                 } else {
+//                     console.log(`Manual Shear command sent to ESP32: ${command}`);
+//                 }
+//             });
+//         } else {
+//             console.error('Invalid Manual Shear command received:', command);
+//         }
+//     });
+
+//     // Listen for 'cut_status' from ESP32 and directly emit to React UI
+//     socket.on('cut_status', (data) => {
+//         if (data && data.cutCount !== undefined) {
+//             console.log('Cut count received:', data);
+//             io.emit('cut_status', data); // Send cut count data to React UI
+//         } else {
+//             console.log('Invalid data received:', data);
+//         }
+//     });
+
+//     // Handle client disconnection
+//     socket.on('disconnect', () => {
+//         console.log('Client disconnected: ' + socket.id);
+//     });
+// });
+
+// // Start the HTTP server
+// server.listen(4300, () => {
+//     console.log(`Server is running on port 4300`);
+// });
 
 
 

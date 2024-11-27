@@ -89,22 +89,48 @@ io.on('connection', (socket) => {
     });
 
     // Listen for travel distance updates from ESP32
-    
+socket.on('travel_distance', (data) => {
+    console.log('Received raw travel_distance data:', data);
 
-    // parser.on('data', (line) => {
-    //     try {
-    //         const parsedData = JSON.parse(line);
+    // Check if data is already an object
+    if (typeof data === 'object' && data !== null) {
+        // Ensure it contains 'travelDistance'
+        if (data.travelDistance !== undefined) {
+            console.log('Parsed travel distance:', data.travelDistance);
 
-    //         if (parsedData.travelDistance !== undefined) {
-    //             console.log('Travel distance received:', parsedData.travelDistance);
+            // Emit the travel distance to React UI or other connected clients
+            io.emit('travel_distance', { travelDistance: data.travelDistance });
+        } else {
+            console.warn('Received data does not include travelDistance:', data);
+        }
+    } else {
+        console.warn('Received non-object data:', data);
+    }
+});
 
-    //             // Emit travel distance to the React UI
-    //             io.emit('travel_distance', { distance: parsedData.travelDistance });
-    //         }
-    //     } catch (err) {
-    //         console.error('Error parsing serial data:', err.message);
-    //     }
-    // });
+
+
+//     // Listen for travel distance updates from ESP32
+// socket.on('travel_distance', (data) => {
+//     console.log('Received raw travel_distance data:', data);
+
+//     // Ensure the received data is a string and attempt to parse it as JSON
+//     try {
+//         const parsedData = JSON.parse(data);
+
+//         // Check if the parsed data includes 'travelDistance'
+//         if (parsedData.travelDistance !== undefined) {
+//             console.log('Parsed travel distance:', parsedData.travelDistance);
+
+//             // Emit the travel distance to React UI or other connected clients
+//             io.emit('travel_distance', { travelDistance: parsedData.travelDistance });
+//         } else {
+//             console.warn('Received data does not include travelDistance:', parsedData);
+//         }
+//     } catch (err) {
+//         console.error('Error parsing travel_distance data:', err.message);
+//     }
+// });
 
     // Handle client disconnection
     socket.on('disconnect', () => {

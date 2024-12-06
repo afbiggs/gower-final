@@ -86,6 +86,30 @@ socket.on('material_forward_control', (command) => {
     }
 });
 
+// Handle E-Stop Command
+socket.on("e_stop", () => {
+    console.log("E-Stop Command Received from Client");
+    port.write("ESTOP\n", (err) => {
+      if (err) {
+        console.error("Failed to send E-Stop command to ESP32:", err.message);
+      } else {
+        console.log("E-Stop command sent to ESP32");
+      }
+    });
+  });
+
+  // Handle Reset E-Stop Command
+  socket.on("reset_e_stop", () => {
+    console.log("Reset E-Stop Command Received from Client");
+    port.write("RESET_ESTOP\n", (err) => {
+      if (err) {
+        console.error("Failed to send Reset E-Stop command to ESP32:", err.message);
+      } else {
+        console.log("Reset E-Stop command sent to ESP32");
+      }
+    });
+  });
+
 
     // // Listen for Material Forward Button events
     // socket.on('material_forward_control', (command) => {

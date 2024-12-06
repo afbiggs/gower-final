@@ -41,34 +41,69 @@ io.on('connection', (socket) => {
             }
         });
     });
+    
+       // Forward confirm_reset to ESP32
+    socket.on("confirm_reset", (data) => {
+        console.log("Confirm reset command received from client:", data);
 
-    // Listen for Material Forward Button events
-    socket.on('material_forward_control', (command) => {
-        console.log(`Material Forward command received: ${command}`);
-
-        // Validate and send command to ESP32
-        if (command === "ON" || command === "OFF") {
-            port.write(`{"materialForward":"${command}"}\n`, (err) => {
-                if (err) {
-                    console.error('Error writing to serial port:', err.message);
-                } else {
-                    console.log(`Material Forward command sent to ESP32: ${command}`);
-                }
-            });
-        } else {
-            console.error('Invalid Material Forward command received:', command);
-        }
+        // Forward reset command to ESP32 via serial port
+        const resetCommand = JSON.stringify({ action: "reset" }) + "\n";
+        port.write(resetCommand, (err) => {
+            if (err) {
+                console.error("Error writing reset command to ESP32:", err.message);
+            } else {
+                console.log("Reset command sent to ESP32:", resetCommand);
+            }
+        });
     });
 
-//     // Listen for pause_motor from the React client
-// socket.on('pause_motor', () => {
-//     console.log('Pause motor command received from client.');
 
-//     // Send pause command to ESP32 over Socket.IO
-//     io.emit('pause_motor', { motor: 'PAUSE' });
-//     console.log('Pause command sent to ESP32 over Socket.IO.');
-// });
+    // Listen for Material Forward Button events
+socket.on('material_forward_control', (command) => {
+    console.log(`Material Forward command received: ${command}`);
 
+    // Validate the command
+    if (command === "ON" || command === "OFF") {
+        // Emit the command to the ESP32 over Socket.IO
+        io.emit('material_forward_control', { materialForward: command });
+        console.log(`Material Forward command emitted to ESP32: ${command}`);
+    } else {
+        console.error('Invalid Material Forward command received:', command);
+    }
+});
+
+ // Listen for Material Forward Button events
+ socket.on('manual_shear_control', (command) => {
+    console.log(`Manual shear received: ${command}`);
+
+    // Validate the command
+    if (command === "ON" || command === "OFF") {
+        // Emit the command to the ESP32 over Socket.IO
+        io.emit('manual_shear_control', { manualShear: command });
+        console.log(`Manual Shear command emitted to ESP32: ${command}`);
+    } else {
+        console.error('Invalid Manual Shear command received:', command);
+    }
+});
+
+
+    // // Listen for Material Forward Button events
+    // socket.on('material_forward_control', (command) => {
+    //     console.log(`Material Forward command received: ${command}`);
+
+    //     // Validate and send command to ESP32
+    //     if (command === "ON" || command === "OFF") {
+    //         port.write(`{"materialForward":"${command}"}\n`, (err) => {
+    //             if (err) {
+    //                 console.error('Error writing to serial port:', err.message);
+    //             } else {
+    //                 console.log(`Material Forward command sent to ESP32: ${command}`);
+    //             }
+    //         });
+    //     } else {
+    //         console.error('Invalid Material Forward command received:', command);
+    //     }
+    // });
 
     socket.on('pause_motor', () => {
         console.log('Pause motor command received.');
@@ -98,20 +133,6 @@ io.on('connection', (socket) => {
             }
         });
     });
-
-    
-    //     // Send material forward OFF command to ESP32 directly via serial port
-    //     const materialForwardCommand = JSON.stringify({ materialForward: 'OFF' }) + '\n';
-    //     port.write(materialForwardCommand, (err) => {
-    //         if (err) {
-    //             console.error('Error writing material forward OFF command to ESP32:', err.message);
-    //         } else {
-    //             console.log('Material Forward OFF command sent to ESP32:', materialForwardCommand);
-    //         }
-    //     });
-    // });
-    
-
 
     // Listen for 'cut_status' from ESP32 and directly emit to React UI
     socket.on('cut_status', (data) => {

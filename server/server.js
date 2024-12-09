@@ -380,6 +380,26 @@ socket.on("reset_e_stop", () => {
         }
     });
 
+    // Listen for travel distance updates from ESP32
+    socket.on('travel_distance', (data) => {
+        console.log('Received raw travel_distance data:', data);
+
+        // Check if data is already an object
+        if (typeof data === 'object' && data !== null) {
+            // Ensure it contains 'travelDistance'
+            if (data.travelDistance !== undefined) {
+                console.log('Parsed travel distance:', data.travelDistance);
+
+                // Emit the travel distance to React UI or other connected clients
+                io.emit('travel_distance', { travelDistance: data.travelDistance });
+            } else {
+                console.warn('Received data does not include travelDistance:', data);
+            }
+        } else {
+            console.warn('Received non-object data:', data);
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('Client disconnected: ' + socket.id);
     });

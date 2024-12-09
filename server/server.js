@@ -18,7 +18,7 @@ const io = socketIo(server, {
 });
 
 // Open the serial port (adjust the path as needed, e.g., 'COM3' on Windows or '/dev/ttyUSB0' on Linux/Mac)
-const port = new SerialPort({ path: '/dev/cu.usbserial-140', baudRate: 115200 });
+const port = new SerialPort({ path: '/dev/cu.usbserial-1110', baudRate: 115200 });
 
 // Use the ReadlineParser to handle incoming serial data
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
@@ -157,6 +157,40 @@ socket.on("e_stop", () => {
             }
         });
     });
+
+    // Add the wheel circumference listener to the existing Socket.IO setup
+io.on('connection', (socket) => {
+    console.log('A client connected: ' + socket.id);
+
+    // Other listeners...
+
+    // Listen for wheel circumference updates
+    socket.on('update_wheel_circumference', (data) => {
+        console.log('Wheel circumference update received:', data);
+
+        // Validate the data
+        if (data && typeof data.wheelCircumference === 'number' && data.wheelCircumference > 0) {
+            const command = JSON.stringify({ wheelCircumference: data.wheelCircumference }) + '\n';
+
+            // Forward the data to the ESP32 via the serial port
+            port.write(command, (err) => {
+                if (err) {
+                    console.error('Error writing wheel circumference to ESP32:', err.message);
+                } else {
+                    console.log('Wheel circumference sent to ESP32:', command);
+                }
+            });
+        } else {
+            console.error('Invalid wheel circumference data:', data);
+        }
+    });
+
+    // Handle client disconnection
+    socket.on('disconnect', () => {
+        console.log('Client disconnected: ' + socket.id);
+    });
+});
+
 
     // Listen for 'cut_status' from ESP32 and directly emit to React UI
     socket.on('cut_status', (data) => {

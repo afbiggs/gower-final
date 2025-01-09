@@ -97,10 +97,46 @@ io.on('connection', (socket) => {
         io.emit('confirm_reset');
     });
 
-    socket.on('cut_status', (data) => {
-        console.log('Cut status received:', data);
-        io.emit('cut_status', data);
+    socket.on("cut_status_update", (data) => {
+        console.log("Cut status update received:", data);
+    
+        if (data.inputQuantity !== undefined) {
+            inputQuantity = data.inputQuantity; // Update inputQuantity from ESP32
+    
+            if (inputQuantity > 0) {
+                console.log(`Cut completed. Remaining quantity: ${inputQuantity}`);
+            }
+    
+            if (inputQuantity === 0) {
+                io.emit("cutting_completed", { 
+                    cutCount: data.cutCount || 0, 
+                    cutCycleTime: data.cutCycleTime || null 
+                });
+                console.log("Cutting process completed.");
+            }
+        }
     });
+
+    // socket.on('cut_status', (data) => {
+    //     console.log('Cut status received:', data);
+    
+    //     // Broadcast the current cut status to all clients
+    //     io.emit('cut_status', data);
+    
+    //     // Check if inputQuantity exists and has reached zero
+    //     if (data.inputQuantity !== undefined && data.inputQuantity === 0) {
+    //         io.emit('cutting_completed', {
+    //             cutCount: data.cutCount || 0, // Include total cuts completed
+    //             cutCycleTime: data.cutCycleTime || null, // Optional: Include total cycle time if available
+    //         });
+    //         console.log('Cutting process completed. Notifying frontend...');
+    //     }
+    // });
+
+    // socket.on('cut_status', (data) => {
+    //     console.log('Cut status received:', data);
+    //     io.emit('cut_status', data);
+    // });
 
     socket.on('travel_distance', (data) => {
         console.log('Travel distance received:', data);
